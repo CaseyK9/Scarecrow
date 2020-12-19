@@ -3,7 +3,7 @@ import logging
 import discord.ext.commands as commands
 
 import paths
-from .util import config, utils
+from utils import config
 
 log = logging.getLogger(__name__)
 
@@ -12,13 +12,7 @@ def setup(bot):
     bot.add_cog(Prefix(bot))
 
 
-class PrefixesConfig(config.ConfigElement):
-    def __init__(self, global_, **kwargs):
-        self.global_ = global_
-        self.guild_specific = utils.dict_keys_to_int(kwargs.get('guild_specific', {}))
-
-
-class Prefix:
+class Prefix(commands.Cog):
     """Custom prefixes per server."""
     def __init__(self, bot):
         self.bot = bot
@@ -26,20 +20,26 @@ class Prefix:
         self.saved_prefixes = self.bot.command_prefix
         self.bot.command_prefix = self.get_prefixes
 
-    def __unload(self):
+    def cog_unload(self):
         self.bot.command_prefix = self.saved_prefixes
 
     def get_prefixes(self, bot, message):
+        prefixes = list(self.conf.global_)
         if message.guild is not None:
-            prefixes = self.conf.guild_specific.get(message.guild.id, []) + self.conf.global_
-        else:
-            prefixes = [] + self.conf.global_
+            prefixes += self.conf.guild_specific.get(message.guild.id, [])
 
-        if 'mention' in prefixes:
-            prefixes[prefixes.index('mention')] = f'{message.guild.me.mention if message.guild else bot.user.mention} '
+        try:
+            index = prefixes.index('mention')
+        except ValueError:
+            pass
+        else:
+            mentions = commands.when_mentioned(bot, message)
+            prefixes[index] = mentions[0]
+            prefixes.insert(index, mentions[1])
 
         return prefixes
 
+    @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         if guild.id in self.conf.guild_specific:
             del self.conf.guild_specific[guild.id]

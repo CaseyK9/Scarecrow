@@ -9,25 +9,16 @@ import discord
 import discord.ext.commands as commands
 
 import paths
-from cogs.util import config
+from utils import config
 
 log = logging.getLogger(__name__)
-
-
-class BotConfig(config.ConfigElement):
-    def __init__(self, token, description, **kwargs):
-        self.description = description
-        self.token = token
-        self.status = kwargs.get('status', None)
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
 
 class Bot(commands.AutoShardedBot):
     def __init__(self, conf_path=paths.BOT_CONFIG, debug_instance=False):
         self.app_info = None
         self.owner = None
-        self.do_restart = False
+        self.exit_code = False
         self.start_time = time.time()
         self.conf = config.Config(conf_path, encoding='utf-8')
         self.debug_instance = debug_instance
@@ -39,7 +30,7 @@ class Bot(commands.AutoShardedBot):
         self.load_extensions(paths.COGS_DIR)
 
         # Accept restarts after everything has been initialised without issue
-        self.do_restart = True
+        self.exit_code = True
 
     def load_extensions(self, path):
         # Load all the cogs we find in the given path
@@ -128,12 +119,12 @@ class Bot(commands.AutoShardedBot):
             return None
 
     def shutdown(self):
-        self.do_restart = False
+        self.exit_code = False
         # Log out of Discord
         asyncio.ensure_future(self.logout(), loop=self.loop)
 
     def restart(self):
-        self.do_restart = True
+        self.exit_code = True
         # Log out of Discord
         asyncio.ensure_future(self.logout(), loop=self.loop)
 

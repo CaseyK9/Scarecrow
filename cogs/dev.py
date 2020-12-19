@@ -12,19 +12,19 @@ from discord.ext import commands
 import psutil
 
 import paths
-from .util import utils
+from utils import utils
 
 
 def setup(bot):
     bot.add_cog(Dev(bot))
 
 
-class Dev:
+class Dev(commands.Cog):
     """Nope, not for you."""
     def __init__(self, bot):
         self.bot = bot
 
-    def __local_check(self, ctx):
+    def cog_check(self, ctx):
         # Owner commands only
         return ctx.author.id == ctx.bot.owner.id
 
@@ -91,7 +91,7 @@ class Dev:
             code = '\n'.join(code.splitlines()[1:-1])
         code = code.strip('` ')
 
-        # Wrap the code inside a coroutine to allow asyncronous keywords
+        # Wrap the code inside a coroutine to allow asynchronous keywords
         code = f'async def painting_of_a_happy_little_tree(ctx):\n{textwrap.indent(code, "    ")}'
         stdout = io.StringIO()
         env = dict(globals())

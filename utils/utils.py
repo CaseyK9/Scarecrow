@@ -3,9 +3,7 @@ This gather stuff that for the most part should be written elsewhere but is not 
 """
 import aiohttp
 import asyncio
-import collections
 import random
-import re
 
 import discord
 import discord.ext.commands as commands
@@ -21,6 +19,7 @@ class AuditLogReason(commands.Converter):
             max_len = 512 - len(reason) + len(argument)
             raise commands.BadArgument(f'Reason is too long : {len(argument)}. Max for you is {max_len}')
         return reason
+
 
 class GuildChannelConverter(commands.IDConverter):
     def __init__(self):
@@ -80,25 +79,6 @@ class HTTPError(Exception):
     @property
     def message(self):
         return self._resp_msg
-
-
-
-def dict_keys_to_int(d):
-    """#HowToBeLazy"""
-    return {int(k): v for k, v in d.items()}
-
-
-class OrderedCounter(collections.Counter, collections.OrderedDict):
-    """A counter that remembers the order elements are first encountered."""
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({repr(collections.OrderedDict(self))})'
-
-    def __reduce__(self):
-        return self.__class__, (collections.OrderedDict(self),)
-
-    def item_at(self, index):
-        return self[list(self.keys())[index]]
 
 
 def duration_to_str(duration):

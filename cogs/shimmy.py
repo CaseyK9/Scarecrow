@@ -1,5 +1,3 @@
-import random
-
 import discord
 import discord.ext.commands as commands
 
@@ -17,47 +15,22 @@ requestable_roles = {
     'nsfw': 261189004681019392
 }
 
-eight_ball_responses = [
-    # Positive
-    "It is certain",
-    "It is decidedly so",
-    "Without a doubt",
-    "Yes, definitely",
-    "You may rely on it",
-    "As I see it, yes",
-    "Most likely",
-    "Outlook good",
-    "Yes",
-    "Signs point to yes",
-    # Non committal
-    "Reply hazy try again",
-    "Ask again later",
-    "Better not tell you now",
-    "Cannot predict now",
-    "Concentrate and ask again",
-    # Negative
-    "Don't count on it",
-    "My reply is no",
-    "My sources say no",
-    "Outlook not so good",
-    "Very doubtful"
-]
-
 
 def setup(bot):
     bot.add_cog(Shimmy(bot))
 
 
-class Shimmy:
+class Shimmy(commands.Cog):
     """Exclusivities to Shimmy's discord server."""
     def __init__(self, bot):
         self.bot = bot
         self.nsfw_role = None
         self.log_channel = None
 
-    def __local_check(self, ctx):
+    def cog_check(self, ctx):
         return ctx.guild is not None and ctx.guild.id == SHIMMY_GUILD_ID
 
+    @commands.Cog.listener()
     async def on_member_join(self, member):
         if member.guild is None or member.guild.id != SHIMMY_GUILD_ID:
             return
@@ -65,6 +38,7 @@ class Shimmy:
             self.log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
         await self.log_channel.send(f'{str(member)} (id {member.id}) joined.')
 
+    @commands.Cog.listener()
     async def on_member_remove(self, member):
         if member.guild is None or member.guild.id != SHIMMY_GUILD_ID:
             return
@@ -72,6 +46,7 @@ class Shimmy:
             self.log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
         await self.log_channel.send(f'{str(member)} (id {member.id}) left or got removed.')
 
+    @commands.Cog.listener()
     async def on_member_ban(self, guild, member):
         if guild is None or guild.id != SHIMMY_GUILD_ID:
             return
@@ -104,12 +79,3 @@ class Shimmy:
 
         await ctx.send(content='@here', embed=embed)
         await ctx.message.delete()
-
-    @commands.command()
-    async def ball(self, ctx, *, question):
-        """Scarecrow's 8-Ball reaches into the future, to find the answers to your questions.
-
-        It knows what will be, and is willing to share this with you. Just send a question that can be answered by
-        "Yes" or "No", then let Scarecrow's 8-Ball show you the way !
-        """
-        await ctx.send(random.choice(eight_ball_responses))

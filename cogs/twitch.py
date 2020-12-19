@@ -7,18 +7,21 @@ import discord
 import discord.ext.commands as commands
 
 import paths
-from .util import config, utils
+from utils import config, utils
 
 log = logging.getLogger(__name__)
 
 
 def setup(bot):
+    raise NotImplementedError()
     cog = Twitch(bot)
     bot.add_cog(cog)
     cog.start()
 
+
 class TwitchError(commands.CommandError):
     pass
+
 
 class TwitchConfig(config.ConfigElement):
     def __init__(self, client_id, **kwargs):
